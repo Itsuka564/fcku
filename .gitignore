@@ -1,4 +1,4 @@
-/config/db.php
+api/config/db.php
 /vendor/
-.DS_Store
 *.log
+.DS_Store
