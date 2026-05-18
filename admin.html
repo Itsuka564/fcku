@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-  <title>FotokopiKu | Dasbor Admin</title>
+  <title>FotokopiKu | Dasbor Manajemen Admin</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
   <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
@@ -159,10 +159,10 @@
     `;
   }
 
-  // ========== KONEKSI API DATABASE (READ & UPDATE) ==========
+  // ========== KONEKSI API DATABASE DENGAN JALUR RELATIF 🔗 ==========
   async function fetchOrders() {
     try {
-        const response = await fetch('http://localhost/fotokopiku/api/orders/read.php?t=' + Date.now());
+        const response = await fetch('api/orders/read.php?t=' + Date.now());
         const data = await response.json();
         
         if (data.status === 'success') {
@@ -175,10 +175,10 @@
     }
   }
 
-  // ========== ASYNC UPDATE STATUS (DENGAN PENGURANGAN STOK WHITE BOX) ==========
+  // ========== ASYNC UPDATE STATUS (WHITE BOX TESTING PENGURANGAN STOK) ==========
   async function updateOrderStatus(orderId, newStatus) {
     try {
-        const response = await fetch('http://localhost/fotokopiku/api/orders/update_status.php', {
+        const response = await fetch('api/orders/update_status.php', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ id: orderId, status: newStatus })
@@ -189,13 +189,12 @@
             const idx = allOrders.findIndex(o => o.id == orderId);
             if(idx !== -1) {
                 
-                // SISTEM PENGURANGAN STOK OTOMATIS
-                // Dieksekusi saat status baru saja diubah menjadi 'diproses'
+                // SISTEM PENGURANGAN STOK OTOMATIS (WHITE BOX TESTING)
                 if (newStatus === 'diproses' && allOrders[idx].status !== 'diproses') {
                     let order = allOrders[idx];
                     let totalLembar = (parseInt(order.jumlah_halaman) || 1) * (parseInt(order.jumlah_kopian) || 1);
                     
-                    // Asumsi: 1 lembar memakan 0.2% kapasitas kertas, 0.1% kapasitas tinta
+                    // Alokasi: 1 lembar memakan 0.2% kuota kertas, 0.1% kuota tinta
                     let biayaKertas = totalLembar * 0.2; 
                     let biayaTinta = totalLembar * 0.1;  
 
@@ -325,7 +324,7 @@
         <div class="queue-actions" style="margin-top:16px; display:flex; justify-content:space-between; align-items:center; border-top:1px dashed #cbd5e1; padding-top:12px;">
            <span style="font-weight:900; font-size:1.1rem; color:#e67e22;">Rp ${totalHarga.toLocaleString()}</span>
            <div style="display:flex; gap:8px;">
-               <button class="downloadBtn" onclick="window.open('http://localhost/fotokopiku/api/orders/uploads/' + encodeURIComponent('${fileName}'), '_blank')" style="background:#3498db; color:white; border:none; padding:8px 16px; border-radius:30px; cursor:pointer; font-weight:600; font-size:0.85rem; transition:0.2s;"><i class="fas fa-download"></i> Unduh Berkas</button>
+               <button class="downloadBtn" onclick="window.open('api/orders/uploads/' + encodeURIComponent('${fileName}'), '_blank')" style="background:#3498db; color:white; border:none; padding:8px 16px; border-radius:30px; cursor:pointer; font-weight:600; font-size:0.85rem; transition:0.2s;"><i class="fas fa-download"></i> Unduh Berkas</button>
                
                ${job.status === 'menunggu' || job.status === 'dikonfirmasi' ? 
                  `<button class="startPrintBtn" data-id="${job.id}"><i class="fas fa-print"></i> Proses Pesanan</button>` : 

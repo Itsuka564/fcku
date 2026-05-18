@@ -243,7 +243,7 @@
     return `📁 <strong>${params.file_display_name || 'Dokumen'}</strong> <br> ${service === 'Jilid Skripsi' ? params.cover : 'Layanan'} | ${params.eksemplar || 1} Eksemplar`;
   }
   
-  // ========== FILE INSTANT UPLOADER ENGINE ==========
+  // ========== FILE INSTANT UPLOADER ENGINE (SINKRON PARAMES PARENT) ==========
   async function uploadFileHelper(fileInput, textEl) {
     if (!fileInput.files[0]) return null;
     textEl.innerHTML = `<i class="fas fa-spinner fa-spin" style="color:#2c7da0;"></i> Mengunggah dokumen...`;
@@ -252,7 +252,7 @@
     formData.append('file', fileInput.files[0]);
     
     try {
-        const response = await fetch('http://localhost/fotokopiku/api/orders/upload.php', {
+        const response = await fetch('api/orders/upload.php', {
             method: 'POST',
             body: formData
         });
@@ -275,7 +275,7 @@
   // ========== BACKEND REAL DATABASE CONNECTORS ==========
   async function fetchUserOrders() {
     try {
-        const response = await fetch('http://localhost/fotokopiku/api/orders/read.php?t=' + Date.now());
+        const response = await fetch('api/orders/read.php?t=' + Date.now());
         const data = await response.json();
         if (data.status === 'success') {
             userOrders = data.data;
@@ -305,7 +305,7 @@
     };
 
     try {
-        const response = await fetch('http://localhost/fotokopiku/api/orders/create.php', {
+        const response = await fetch('api/orders/create.php', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer TOKEN_USER' },
             body: JSON.stringify(payloadData)
@@ -341,7 +341,7 @@
                 total_tagihan: item.total
             };
             try {
-                const response = await fetch('http://localhost/fotokopiku/api/orders/create.php', {
+                const response = await fetch('api/orders/create.php', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer TOKEN_USER' },
                     body: JSON.stringify(payloadData)
@@ -360,7 +360,7 @@
     }
   }
 
-  // ========== UI PROGRESS GENERATOR ==========
+  // ========== UI PROGRESS GENERATOR (SINKRONISASI ENUM KECIL) ==========
   function renderActiveProgress() {
     const container = document.getElementById('activeProgressList'); if(!container) return;
     
