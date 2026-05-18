@@ -1,79 +1,88 @@
 <?php
-//
-include_once '../config/db.php';
+// Izinkan akses dari frontend (CORS)
+header("Access-Control-Allow-Origin: *");
+header("Content-Type: application/json; charset=UTF-8");
+header("Access-Control-Allow-Methods: POST, OPTIONS");
+header("Access-Control-Allow-Headers: Content-Type, Access-Control-Allow-Headers, Authorization, X-Requested-With");
 
-// 1. Ambil Token dari Header (Simulasi Keamanan JWT)
-$headers = apache_request_headers();
-$token = isset($headers['Authorization']) ? $headers['Authorization'] : null;
-
-if(!$token) {
-    echo json_encode(["status" => "error", "message" => "Aiya! Kamu nggak punya izin masuk, harus login dulu!"]);
-    exit;
+// 🔥 SIHIR BARU: Sambut OPTIONS Request dari browser biar tidak dikira XAMPP mati!
+if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
+    http_response_code(200);
+    exit();
 }
 
-// 2. Ambil Data Pesanan dari Postman/Frontend
+include_once '../config/db.php';
+
+$headers = apache_request_headers();
+// Siasat agar case-insensitive pada header
+$authHeader = isset($headers['Authorization']) ? $headers['Authorization'] : (isset($headers['authorization']) ? $headers['authorization'] : null);
+
+if (!$authHeader) {
+    http_response_code(401);
+    echo json_encode(["status" => "error", "message" => "Aiya! Kamu harus login dulu, Pian!"]);
+    exit();
+}
+
 $data = json_decode(file_get_contents("php://input"));
 
-if(!empty($data->jenis_cetak) && !empty($data->ukuran_kertas) && !empty($data->jumlah_halaman)) {
-    
+if (!empty($data->jenis_layanan) && !empty($data->total_tagihan)) {
     try {
-        // 3. PRICING ENGINE: Ambil Harga Cetak
-        // Contoh key: harga_bw_a4, harga_bw_f4, atau harga_warna_standar
-        $key_cetak = ($data->jenis_cetak == 'color') ? 'harga_warna_standar' : "harga_" . $data->jenis_cetak . "_" . $data->ukuran_kertas;
+        $jenis_cetak    = $data->jenis_layanan;
+        $ukuran_kertas  = isset($data->ukuran_kertas) ? $data->ukuran_kertas : '-';
+        $jumlah_halaman = isset($data->jumlah_halaman) ? (int)$data->jumlah_halaman : 1;
+        $jumlah_kopian  = isset($data->jumlah_kopian) ? (int)$data->jumlah_kopian : 1;
+        $jenis_jilid    = isset($data->jenis_jilid) ? $data->jenis_jilid : 'Tidak Ada';
+        $total_tagihan  = (float)$data->total_tagihan;
+        $nama_file      = isset($data->nama_file) ? $data->nama_file : 'Dokumen_Tanpa_Nama.pdf';
+
+        $tanggal_hari_ini = date("Ymd");
+        $query_q = "SELECT queue_num FROM orders WHERE queue_num LIKE :hari_ini ORDER BY id DESC LIMIT 1";
+        $stmt_q = $conn->prepare($query_q);
+        $param_hari = "Q-" . $tanggal_hari_ini . "-%";
+        $stmt_q->bindParam(':hari_ini', $param_hari);
+        $stmt_q->execute();
         
-        $stmt_harga = $conn->prepare("SELECT setting_value FROM system_settings WHERE setting_key = :key");
-        $stmt_harga->execute(['key' => $key_cetak]);
-        $harga_per_hal = $stmt_harga->fetchColumn() ?: 0;
-
-        // 4. PRICING ENGINE: Ambil Harga Jilid
-        $harga_jilid = 0;
-        if (!empty($data->jenis_jilid) && $data->jenis_jilid != 'tanpa') {
-            $key_jilid = "harga_jilid_lakban_" . $data->jenis_jilid; // kecil/sedang/besar
-            $stmt_harga->execute(['key' => $key_jilid]);
-            $harga_jilid = $stmt_harga->fetchColumn() ?: 0;
+        $urutan = 1;
+        if ($stmt_q->rowCount() > 0) {
+            $row = $stmt_q->fetch(PDO::FETCH_ASSOC);
+            $last_q = $row['queue_num'];
+            $last_urutan = (int)substr($last_q, -3);
+            $urutan = $last_urutan + 1;
         }
+        $queue_num = "Q-" . $tanggal_hari_ini . "-" . str_pad($urutan, 3, "0", STR_PAD_LEFT);
 
-        // 5. Rumus Hitung Total
-        // Total = (Halaman * Harga * Copy) + (Harga Jilid * Copy)
-        $jumlah_kopian = !empty($data->jumlah_kopian) ? $data->jumlah_kopian : 1;
-        $total_tagihan = ($data->jumlah_halaman * $harga_per_hal * $jumlah_kopian) + ($harga_jilid * $jumlah_kopian);
-
-        // 6. Buat Nomor Antrean Otomatis (SRS Spesifikasi)
-        $queue_num = "Q-" . date("Ymd") . "-" . rand(100, 999);
-
-        // 7. Simpan ke Database
-        $query = "INSERT INTO orders (user_id, queue_num, jenis_cetak, ukuran_kertas, jumlah_halaman, jumlah_kopian, jenis_jilid, total_tagihan, status) 
-                  VALUES (1, :q_num, :jenis, :ukuran, :hal, :copy, :jilid, :total, 'menunggu')";
-
+        $query = "INSERT INTO orders 
+                  (user_id, queue_num, nama_file, jenis_cetak, ukuran_kertas, jumlah_halaman, jumlah_kopian, jenis_jilid, total_tagihan, status) 
+                  VALUES 
+                  (1, :queue_num, :nama_file, :jenis_cetak, :ukuran_kertas, :jumlah_halaman, :jumlah_kopian, :jenis_jilid, :total_tagihan, 'Menunggu')";
+        
         $stmt = $conn->prepare($query);
-        $success = $stmt->execute([
-            'q_num' => $queue_num,
-            'jenis' => $data->jenis_cetak,
-            'ukuran' => $data->ukuran_kertas,
-            'hal' => $data->jumlah_halaman,
-            'copy' => $jumlah_kopian,
-            'jilid' => $data->jenis_jilid,
-            'total' => $total_tagihan
-        ]);
+        $stmt->bindParam(':queue_num', $queue_num);
+        $stmt->bindParam(':nama_file', $nama_file);
+        $stmt->bindParam(':jenis_cetak', $jenis_cetak);
+        $stmt->bindParam(':ukuran_kertas', $ukuran_kertas);
+        $stmt->bindParam(':jumlah_halaman', $jumlah_halaman);
+        $stmt->bindParam(':jumlah_kopian', $jumlah_kopian);
+        $stmt->bindParam(':jenis_jilid', $jenis_jilid);
+        $stmt->bindParam(':total_tagihan', $total_tagihan);
 
-        if($success) {
+        if ($stmt->execute()) {
+            http_response_code(201);
             echo json_encode([
                 "status" => "success",
-                "message" => "Pesanan berhasil dibuat!",
-                "data" => [
-                    "nomor_antrean" => $queue_num,
-                    "rincian_harga" => [
-                        "per_halaman" => $harga_per_hal,
-                        "biaya_jilid" => $harga_jilid
-                    ],
-                    "total_bayar" => $total_tagihan
-                ]
+                "queue_num" => $queue_num,
+                "total_tagihan" => $total_tagihan
             ]);
+        } else {
+            http_response_code(503);
+            echo json_encode(["status" => "error", "message" => "Gagal menyimpan ke database."]);
         }
-    } catch (Exception $e) {
-        echo json_encode(["status" => "error", "message" => "Ada hantu di server: " . $e->getMessage()]);
+    } catch(PDOException $e) {
+        http_response_code(500);
+        echo json_encode(["status" => "error", "message" => $e->getMessage()]);
     }
 } else {
-    echo json_encode(["status" => "error", "message" => "Data pesanan belum lengkap, Pian!"]);
+    http_response_code(400);
+    echo json_encode(["status" => "error", "message" => "Data tidak lengkap."]);
 }
 ?>

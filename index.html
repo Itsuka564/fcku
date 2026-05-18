@@ -1,0 +1,591 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+  <title>FotokopiKu | Premium Print & Binding</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
+    body { background: #eef2f7; min-height: 100vh; display: flex; justify-content: center; align-items: center; padding: 20px; }
+    .app-container { max-width: 1400px; width: 100%; background: white; border-radius: 32px; box-shadow: 0 25px 45px -12px rgba(0,0,0,0.2); overflow: hidden; }
+    
+    /* Auth Styles */
+    .auth-wrapper { position: relative; background: linear-gradient(135deg, #0f2b3d, #1b4b62); min-height: 700px; display: flex; align-items: center; justify-content: center; overflow: hidden; }
+    .carousel-container { position: absolute; top: 0; left: 0; width: 100%; height: 100%; }
+    .carousel-slide { position: absolute; width: 100%; height: 100%; background-size: cover; background-position: center; opacity: 0; transition: opacity 1.5s ease-in-out; }
+    .carousel-slide.active { opacity: 1; }
+    .overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 43, 61, 0.7); }
+    .auth-card { position: relative; z-index: 2; background: rgba(255,255,255,0.96); backdrop-filter: blur(4px); border-radius: 40px; padding: 40px 36px; max-width: 500px; width: 90%; margin: 40px auto; box-shadow: 0 25px 45px rgba(0,0,0,0.2); }
+    .auth-tabs { display: flex; gap: 12px; justify-content: center; margin-bottom: 28px; }
+    .auth-tab { background: #eef2fa; padding: 10px 28px; border-radius: 60px; font-weight: 600; cursor: pointer; transition: 0.2s; }
+    .auth-tab.active { background: #2c7da0; color: white; }
+    .input-group { text-align: left; margin-bottom: 20px; }
+    .input-group label { font-weight: 600; display: block; margin-bottom: 8px; }
+    .input-group input, .input-group select { width: 100%; padding: 12px 16px; border-radius: 40px; border: 1px solid #cbd5e1; background: white; }
+    .btn-auth { background: #2c7da0; color: white; width: 100%; padding: 12px; border-radius: 40px; font-weight: bold; border: none; cursor: pointer; font-size: 1rem; transition: 0.2s; }
+    .btn-auth:hover { background: #1b5e7a; transform: scale(1.02); }
+    .error-msg { color: #e11d48; font-size: 0.8rem; margin-top: 8px; text-align: center; }
+    .switch-text { text-align: center; margin-top: 20px; font-size: 0.85rem; }
+    .switch-text a { color: #2c7da0; font-weight: 600; cursor: pointer; }
+    
+    /* Dashboard Styles */
+    .dash-header { background: #0f2b3d; color: white; display: flex; justify-content: space-between; align-items: center; padding: 14px 28px; flex-wrap: wrap; }
+    .nav-links { display: flex; gap: 24px; align-items: center; }
+    .nav-btn { background: transparent; border: none; color: white; font-weight: 500; cursor: pointer; padding: 8px 16px; border-radius: 30px; transition: 0.2s; }
+    .nav-btn.active, .nav-btn:hover { background: #2c7da0; }
+    .cart-icon { position: relative; margin-left: 15px; cursor: pointer; font-size: 1.3rem; }
+    .cart-count { position: absolute; top: -8px; right: -12px; background: #e67e22; border-radius: 50%; width: 20px; height: 20px; font-size: 0.7rem; display: flex; align-items: center; justify-content: center; font-weight: bold; }
+    .btn-logout { background: #e67e22; border: none; padding: 6px 20px; border-radius: 40px; color: white; font-weight: 600; cursor: pointer; transition: 0.2s; }
+    .btn-logout:hover { background: #d35400; transform: scale(1.02); }
+    .dashboard-main { padding: 32px; background: #f8fafd; min-height: 70vh; }
+    .hero-banner { background: linear-gradient(135deg, #2c7da0, #1b4b62); border-radius: 28px; padding: 32px 28px; color: white; margin-bottom: 40px; display: flex; justify-content: space-between; flex-wrap: wrap; gap: 20px; }
+    .stats-grid { display: flex; flex-wrap: wrap; gap: 24px; margin-bottom: 40px; }
+    .stat-card { background: white; flex: 1; min-width: 150px; padding: 18px; border-radius: 24px; text-align: center; box-shadow: 0 4px 12px rgba(0,0,0,0.05); transition: transform 0.2s; }
+    .stat-card:hover { transform: translateY(-4px); }
+    .services-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 28px; margin: 30px 0 40px; }
+    .service-card { background: white; border-radius: 28px; padding: 28px 20px; text-align: center; cursor: pointer; transition: 0.3s; box-shadow: 0 5px 15px rgba(0,0,0,0.05); }
+    .service-card:hover { transform: translateY(-8px); box-shadow: 0 20px 30px -12px rgba(0,0,0,0.15); }
+    .service-card i { font-size: 52px; color: #2c7da0; margin-bottom: 20px; }
+    .badge { background: #fef3c7; color: #b45309; display: inline-block; padding: 4px 14px; border-radius: 40px; font-size: 0.7rem; margin-top: 14px; font-weight: 600; }
+    .testimoni { background: #fff; border-radius: 28px; padding: 24px; margin: 40px 0; border-left: 6px solid #2c7da0; }
+    .contact-info-simple { background: #eef2fa; border-radius: 24px; padding: 18px 24px; display: flex; flex-wrap: wrap; justify-content: space-between; }
+    
+    /* Service Form Styles */
+    .service-hero { background: linear-gradient(120deg, #f0f9ff, #e6f0f5); border-radius: 32px; padding: 32px; text-align: center; margin-bottom: 32px; }
+    .service-layout { display: grid; grid-template-columns: 1fr 1fr; gap: 32px; }
+    .info-panel, .form-panel { background: white; border-radius: 28px; padding: 28px; box-shadow: 0 10px 25px -5px rgba(0,0,0,0.05); transition: transform 0.2s; }
+    .price-list { list-style: none; margin: 20px 0; }
+    .price-list li { display: flex; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid #eef2f5; font-weight: 500; }
+    .price-list li span:first-child i { width: 24px; color: #2c7da0; margin-right: 8px; }
+    .price-list .price-tag { color: #e67e22; font-weight: 700; }
+    .highlight { background: #fef9e3; padding: 16px; border-radius: 20px; margin-top: 24px; }
+    .form-group { margin-bottom: 24px; }
+    .form-group label { font-weight: 600; display: block; margin-bottom: 10px; }
+    input, select { width: 100%; padding: 12px 16px; border-radius: 20px; border: 1px solid #cbd5e6; background: white; }
+    
+    /* Upload Area */
+    .upload-area { border: 2px dashed #cbd5e6; border-radius: 24px; background: #f9fbfd; padding: 24px; text-align: center; cursor: pointer; transition: 0.25s; margin-bottom: 12px; }
+    .upload-area:hover { border-color: #2c7da0; background: #eef2f9; }
+    
+    .btn-primary { background: #2c7da0; width: 100%; padding: 14px; border-radius: 40px; color: white; font-weight: bold; border: none; cursor: pointer; margin-top: 10px; transition: 0.2s; }
+    .btn-primary:hover { background: #1b5e7a; transform: scale(1.02); }
+    .btn-secondary { background: #f39c12; width: 100%; padding: 12px; border-radius: 40px; color: white; font-weight: bold; border: none; cursor: pointer; margin-top: 10px; transition: 0.2s; }
+    .btn-cart { background: #27ae60; margin-top: 8px; }
+    .btn-cart:hover { background: #2ecc71; transform: scale(1.02); }
+    .back-home { background: #eef2f9; border: none; padding: 10px 24px; border-radius: 40px; cursor: pointer; margin-bottom: 24px; transition: 0.2s; }
+    .price-box { background: linear-gradient(135deg, #eef2ff, #e0e7ff); padding: 12px; border-radius: 20px; text-align: center; margin: 16px 0; font-weight: 700; font-size: 1.1rem; }
+    .history-list, .cart-list { background: white; border-radius: 28px; padding: 20px; }
+    .history-item, .cart-item { border-bottom: 1px solid #e2e8f0; padding: 16px; display: flex; justify-content: space-between; flex-wrap: wrap; align-items: center; transition: background 0.2s; }
+    .cart-item-clickable { cursor: pointer; border-radius: 20px; margin-bottom: 8px; }
+    .cart-item-clickable:hover { background: #f1f5f9; transform: translateX(4px); }
+    .cart-actions button { background: none; border: none; cursor: pointer; margin-left: 10px; color: #e67e22; font-size: 1.1rem; }
+    
+    /* Progress Cards */
+    .progress-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 24px; margin-top: 16px; }
+    .progress-card { background: white; border-radius: 28px; padding: 20px; box-shadow: 0 8px 20px rgba(0,0,0,0.05); border-left: 5px solid #2c7da0; }
+    .card-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 16px; flex-wrap: wrap; gap: 8px; }
+    .service-icon { width: 48px; height: 48px; background: #eef2ff; border-radius: 30px; display: flex; align-items: center; justify-content: center; font-size: 24px; color: #2c7da0; }
+    .status-badge { padding: 6px 14px; border-radius: 40px; font-size: 0.75rem; font-weight: 700; background: #fff3e0; color: #e67e22; }
+    .status-badge.proses { background: #e3f2fd; color: #1565c0; }
+    .order-title { font-weight: 800; font-size: 1.2rem; margin: 8px 0 4px; color: #0f2b3d; }
+    .order-details { color: #475569; font-size: 0.85rem; margin-bottom: 16px; border-bottom: 1px dashed #e2e8f0; padding-bottom: 12px; }
+    .order-total { font-weight: 800; font-size: 1.2rem; color: #1b4b62; margin: 8px 0; }
+    
+    .progress-steps { display: flex; align-items: center; justify-content: space-between; margin: 18px 0 12px; gap: 6px; }
+    .step { flex: 1; text-align: center; font-size: 0.7rem; font-weight: 600; color: #94a3b8; }
+    .step.active { color: #2c7da0; }
+    .step.completed { color: #27ae60; }
+    .step i { display: block; font-size: 1.1rem; background: #f1f5f9; width: 32px; height: 32px; line-height: 32px; border-radius: 50%; margin: 0 auto 8px; }
+    .step.active i { background: #2c7da0; color: white; }
+    .step.completed i { background: #27ae60; color: white; }
+    .progress-bar-bg { background: #e2e8f0; border-radius: 20px; height: 8px; overflow: hidden; margin: 12px 0 8px; }
+    .progress-fill { background: linear-gradient(90deg, #2c7da0, #47b5d6); width: 0%; height: 100%; border-radius: 20px; }
+    .empty-progress { text-align: center; padding: 48px 20px; background: #f9fafc; border-radius: 32px; color: #64748b; }
+    
+    /* Modal Detail & Edit */
+    .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); backdrop-filter: blur(4px); display: flex; align-items: center; justify-content: center; z-index: 1000; }
+    .modal-card { background: white; border-radius: 40px; padding: 28px; max-width: 500px; width: 90%; max-height: 85vh; overflow-y: auto; box-shadow: 0 30px 50px rgba(0,0,0,0.3); }
+    .modal-card h3 { font-size: 1.6rem; margin-bottom: 16px; color: #0f2b3d; }
+    .detail-item { margin-bottom: 16px; padding-bottom: 12px; border-bottom: 1px solid #eef2f5; }
+    .detail-label { font-weight: 700; color: #2c7da0; margin-bottom: 6px; }
+    .detail-value { color: #1e293b; font-size: 1rem; }
+    .edit-field { margin-bottom: 20px; }
+    .edit-field label { font-weight: 600; display: block; margin-bottom: 8px; }
+    .edit-field input, .edit-field select { width: 100%; padding: 10px 14px; border-radius: 20px; border: 1px solid #cbd5e6; }
+    
+    .btn-save-edit { background: #27ae60; width: 100%; padding: 12px; border-radius: 40px; color: white; font-weight: bold; border: none; cursor: pointer; margin-top: 16px; }
+    .btn-edit-detail { background: #2c7da0; width: 100%; padding: 12px; border-radius: 40px; color: white; font-weight: bold; border: none; cursor: pointer; margin-top: 16px; }
+    .btn-cancel { background: #eef2f9; width: 100%; padding: 12px; border-radius: 40px; color: #475569; font-weight: 600; border: none; cursor: pointer; margin-top: 12px; }
+    
+    /* Footer */
+    .footer-info { background: #0f2b3d; color: white; padding: 40px 32px 24px; margin-top: 60px; border-radius: 28px 28px 0 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 32px; }
+    .footer-section h4 { font-size: 1.2rem; margin-bottom: 20px; font-weight: 700; position: relative; display: inline-block; }
+    .footer-section h4:after { content: ''; position: absolute; bottom: -8px; left: 0; width: 40px; height: 3px; background: #e67e22; border-radius: 4px; }
+    .footer-section p { margin: 12px 0; line-height: 1.6; opacity: 0.9; display: flex; align-items: center; gap: 10px; }
+    .footer-section i { width: 24px; color: #e67e22; font-size: 1.1rem; }
+    .footer-section .jam-list { list-style: none; margin-top: 12px; }
+    .footer-section .jam-list li { margin: 12px 0; display: flex; justify-content: space-between; border-bottom: 1px dashed rgba(255,255,255,0.2); padding-bottom: 8px; }
+    .footer-copyright { text-align: center; padding: 20px; background: #0a1f2c; color: #94a3b8; font-size: 0.8rem; border-radius: 0 0 28px 28px; }
+    
+    /* Toast Pop-Up System */
+    .custom-toast {
+      position: fixed; top: 25px; right: 25px; background: #27ae60; color: white; padding: 16px 28px;
+      border-radius: 20px; box-shadow: 0 15px 35px rgba(39, 174, 96, 0.35); display: none; align-items: center;
+      gap: 14px; z-index: 99999; font-weight: 700; font-size: 0.95rem; transform: translateX(100px);
+      opacity: 0; transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+    .custom-toast.show { transform: translateX(0); opacity: 1; }
+    .custom-toast.error { background: #e11d48; box-shadow: 0 15px 35px rgba(225, 29, 72, 0.35); }
+    .custom-toast.warning { background: #e67e22; box-shadow: 0 15px 35px rgba(230, 126, 34, 0.35); }
+    
+    @media (max-width: 900px) { .service-layout { grid-template-columns: 1fr; } .progress-grid { grid-template-columns: 1fr; } .footer-info { grid-template-columns: 1fr; text-align: center; } .footer-section h4:after { left: 50%; transform: translateX(-50%); } .footer-section p { justify-content: center; } }
+  </style>
+</head>
+<body>
+
+<div id="customToast" class="custom-toast"></div>
+
+<div class="app-container" id="appRoot">
+  <div id="authPage"></div>
+  <div id="userDashboard" style="display: none;"></div>
+</div>
+
+<script>
+  // ========== TOAST NOTIFICATION SYSTEM ==========
+  function showToast(message, type = 'success') {
+    const toast = document.getElementById('customToast');
+    if (!toast) return;
+    
+    let icon = '<i class="fas fa-check-circle" style="font-size:1.3rem;"></i>';
+    if (type === 'error') icon = '<i class="fas fa-times-circle" style="font-size:1.3rem;"></i>';
+    if (type === 'warning') icon = '<i class="fas fa-exclamation-triangle" style="font-size:1.3rem;"></i>';
+    
+    toast.innerHTML = `${icon} <span>${message}</span>`;
+    toast.className = 'custom-toast';
+    if (type !== 'success') toast.classList.add(type);
+    
+    toast.style.display = 'flex';
+    toast.offsetHeight;
+    toast.classList.add('show');
+    
+    setTimeout(() => {
+        toast.classList.remove('show');
+        setTimeout(() => { toast.style.display = 'none'; }, 400);
+    }, 3000);
+  }
+
+  // ========== CAROUSEL & AUTHENTICATION ==========
+  let slides = document.querySelectorAll('.carousel-slide');
+  let currentSlide = 0;
+  setInterval(() => {
+    slides[currentSlide]?.classList.remove('active');
+    currentSlide = (currentSlide + 1) % slides.length;
+    slides[currentSlide]?.classList.add('active');
+  }, 5000);
+
+  let users = JSON.parse(localStorage.getItem('fotokopiku_users')) || [];
+  users = users.map(u => { if (!u.role) u.role = 'user'; return u; });
+  localStorage.setItem('fotokopiku_users', JSON.stringify(users));
+  
+  document.getElementById('authPage').innerHTML = `
+    <div class="auth-wrapper"><div class="carousel-container"><div class="carousel-slide active" style="background-image: url('https://picsum.photos/id/20/1600/900')"></div><div class="carousel-slide" style="background-image: url('https://picsum.photos/id/42/1600/900')"></div><div class="carousel-slide" style="background-image: url('https://picsum.photos/id/0/1600/900')"></div></div><div class="overlay"></div><div class="auth-card"><div class="auth-tabs"><div class="auth-tab active" data-form="login">Masuk</div><div class="auth-tab" data-form="register">Daftar</div></div><div id="loginFormContainer"><form id="loginForm"><div class="input-group"><label>Email</label><input type="email" id="loginEmail" placeholder="user@mail.com" required></div><div class="input-group"><label>Kata Sandi</label><input type="password" id="loginPassword" placeholder="••••••••" required></div><button type="submit" class="btn-auth">Masuk ke Akun</button><div id="loginErrorMsg" class="error-msg"></div></form></div><div id="registerFormContainer" style="display:none;"><form id="registerForm"><div class="input-group"><label>Nama Lengkap</label><input type="text" id="regName" placeholder="Nama Lengkap Anda" required></div><div class="input-group"><label>Email</label><input type="email" id="regEmail" placeholder="user@example.com" required></div><div class="input-group"><label>Kata Sandi</label><input type="password" id="regPassword" placeholder="Minimal 6 karakter" required></div><div class="input-group"><label>Konfirmasi Kata Sandi</label><input type="password" id="regConfirm" required></div><button type="submit" class="btn-auth">Buat Akun Baru</button><div id="registerErrorMsg" class="error-msg"></div></form></div><div class="switch-text"><a id="switchAuth">Belum memiliki akun? Daftar di sini</a></div></div></div>
+  `;
+  
+  // ========== GLOBAL DATA STORE ==========
+  let userOrders = []; 
+  let cartItems = JSON.parse(localStorage.getItem('fotokopiku_cart')) || [];
+  function saveCart() { localStorage.setItem('fotokopiku_cart', JSON.stringify(cartItems)); updateCartCount(); }
+  function updateCartCount() { document.querySelectorAll('.cart-count').forEach(el => { if(el) el.innerText = cartItems.length; }); }
+  
+  // ========== PRICING ENGINE ==========
+  function calculateTotal(service, params) {
+    if (service === 'Cetak & Fotokopi') {
+      let harga_per_lembar = 0;
+      if (params.mode === 'bw') harga_per_lembar = (params.kertas === 'f4') ? 300 : 250;
+      else if (params.mode === 'warna_hi') harga_per_lembar = 2000;
+      else if (params.mode === 'warna_mid') harga_per_lembar = 1000;
+      else harga_per_lembar = 500;
+
+      let biaya_cetak = harga_per_lembar * params.halaman;
+      let biaya_jilid = 0;
+      if (params.spiral) { 
+        if (params.halaman <= 30) biaya_jilid = 3000;
+        else if (params.halaman <= 60) biaya_jilid = 5000;
+        else biaya_jilid = 8000;
+      }
+      let total = (biaya_cetak + biaya_jilid) * params.copy;
+      if (params.laminating) total += (3000 * params.copy);
+      return total;
+    }
+    if (service === 'Jilid Skripsi') {
+      let hargaCover = params.cover === 'Soft Cover' ? 40000 : 45000;
+      return hargaCover * params.eksemplar;
+    }
+    if (service === 'Scan & Burning CD') return 20000 * params.halaman;
+    if (service === 'Jilid Soft Cover') {
+      let hargaJilid = params.halaman <= 30 ? 3000 : (params.halaman <= 60 ? 6000 : 8000);
+      let hargaCetakKertas = params.halaman * 250; 
+      return (hargaCetakKertas + hargaJilid) * params.eksemplar;
+    }
+    return 0;
+  }
+
+  function getDetailString(service, params) {
+    if (service === 'Cetak & Fotokopi') {
+      let modeText = 'Hitam Putih';
+      if(params.mode === 'warna_low') modeText = 'Warna (Biasa)';
+      if(params.mode === 'warna_mid') modeText = 'Warna (Standar)';
+      if(params.mode === 'warna_hi') modeText = 'Warna (Kualitas Tinggi)';
+      return `📁 <strong>${params.file_display_name || 'Dokumen'}</strong> <br> ${params.copy} salinan x ${params.halaman} hal (${params.kertas.toUpperCase()}), ${modeText}${params.spiral ? ' + Jilid Lakban' : ''}${params.laminating ? ' + Laminating' : ''}`;
+    }
+    return `📁 <strong>${params.file_display_name || 'Dokumen'}</strong> <br> ${service === 'Jilid Skripsi' ? params.cover : 'Layanan'} | ${params.eksemplar || 1} Eksemplar`;
+  }
+  
+  // ========== FILE INSTANT UPLOADER ENGINE ==========
+  async function uploadFileHelper(fileInput, textEl) {
+    if (!fileInput.files[0]) return null;
+    textEl.innerHTML = `<i class="fas fa-spinner fa-spin" style="color:#2c7da0;"></i> Mengunggah dokumen...`;
+    
+    const formData = new FormData();
+    formData.append('file', fileInput.files[0]);
+    
+    try {
+        const response = await fetch('http://localhost/fotokopiku/api/orders/upload.php', {
+            method: 'POST',
+            body: formData
+        });
+        const result = await response.json();
+        if (result.status === 'success') {
+            textEl.innerHTML = `<span style="color:#27ae60; font-weight:bold;"><i class="fas fa-check-circle"></i> Selesai: ${fileInput.files[0].name}</span>`;
+            textEl.setAttribute('data-filename', result.file_name);      
+            textEl.setAttribute('data-displayname', fileInput.files[0].name); 
+            return result.file_name;
+        } else {
+            textEl.innerHTML = `<span style="color:#e74c3c;">❌ Gagal mengunggah dokumen</span>`;
+            return null;
+        }
+    } catch (err) {
+        textEl.innerHTML = `<span style="color:#e74c3c;">❌ Terjadi kesalahan koneksi ke server</span>`;
+        return null;
+    }
+  }
+
+  // ========== BACKEND REAL DATABASE CONNECTORS ==========
+  async function fetchUserOrders() {
+    try {
+        const response = await fetch('http://localhost/fotokopiku/api/orders/read.php?t=' + Date.now());
+        const data = await response.json();
+        if (data.status === 'success') {
+            userOrders = data.data;
+            renderActiveProgress();
+            renderHistoryPage();
+        }
+    } catch (error) {
+        console.error("Gagal sinkronisasi data:", error);
+    }
+  }
+
+  async function addOrderDirect(service, params) {
+    if (!params.file_name) {
+        showToast("Harap tunggu hingga proses unggah dokumen selesai.", 'warning');
+        return;
+    }
+    
+    const total = calculateTotal(service, params);
+    const payloadData = {
+        jenis_layanan: service,
+        nama_file: params.file_name, 
+        ukuran_kertas: params.kertas || 'A4',
+        jumlah_halaman: params.halaman || 1,
+        jumlah_kopian: params.copy || params.eksemplar || 1,
+        jenis_jilid: params.spiral ? 'Lakban' : (params.cover || 'Tidak Ada'),
+        total_tagihan: total
+    };
+
+    try {
+        const response = await fetch('http://localhost/fotokopiku/api/orders/create.php', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer TOKEN_USER' },
+            body: JSON.stringify(payloadData)
+        });
+
+        const result = await response.json();
+
+        if (response.ok) {
+            showToast(`Pesanan berhasil dibuat. Nomor Antrean: ${result.queue_num}`, 'success');
+            fetchUserOrders();
+            document.getElementById('homePage').style.display='block';
+            document.getElementById('servicePage').style.display='none';
+        } else { 
+            showToast(`Gagal memproses pesanan: ${result.message}`, 'error'); 
+        }
+    } catch (error) { 
+        showToast("Gagal terhubung ke server. Periksa koneksi Anda.", 'error'); 
+    }
+  }
+
+  async function processCheckout() {
+    if (cartItems.length === 0) { showToast('Keranjang belanja kosong.', 'warning'); return; }
+    if (confirm(`Proses checkout untuk ${cartItems.length} pesanan dengan total Rp ${cartItems.reduce((s,i)=>s+i.total,0).toLocaleString()}?`)) {
+        let successCount = 0;
+        for (const item of cartItems) {
+            const payloadData = {
+                jenis_layanan: item.service,
+                nama_file: item.params.file_name,
+                ukuran_kertas: item.params.kertas || 'A4',
+                jumlah_halaman: item.params.halaman || 1,
+                jumlah_kopian: item.params.copy || item.params.eksemplar || 1,
+                jenis_jilid: item.params.spiral ? 'Lakban' : (item.params.cover || 'Tidak Ada'),
+                total_tagihan: item.total
+            };
+            try {
+                const response = await fetch('http://localhost/fotokopiku/api/orders/create.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer TOKEN_USER' },
+                    body: JSON.stringify(payloadData)
+                });
+                if (response.ok) successCount++;
+            } catch (error) { console.error(error); }
+        }
+        if (successCount > 0) {
+            cartItems = []; saveCart();
+            showToast(`${successCount} pesanan berhasil diproses.`, 'success');
+            fetchUserOrders();
+            renderUserDashboard(getCurrentUserName());
+        } else {
+            showToast('Seluruh pesanan gagal diproses.', 'error');
+        }
+    }
+  }
+
+  // ========== UI PROGRESS GENERATOR ==========
+  function renderActiveProgress() {
+    const container = document.getElementById('activeProgressList'); if(!container) return;
+    
+    const activeOrders = userOrders.filter(o => o.status !== 'siap_diambil');
+    if(activeOrders.length===0){ container.innerHTML='<div class="empty-progress"><p>Tidak ada pesanan aktif saat ini.</p></div>'; return; }
+    
+    container.innerHTML = `<div class="progress-grid">${activeOrders.map(o => {
+      let statusText = 'Menunggu';
+      let progressWidth = 20;
+      let step1Class = 'completed';
+      let step2Class = '';
+      let step3Class = '';
+      
+      if (o.status === 'diproses') {
+          statusText = 'Diproses';
+          progressWidth = 55;
+          step2Class = 'active';
+      } else if (o.status === 'selesai') {
+          statusText = 'Siap Diambil';
+          progressWidth = 100;
+          step2Class = 'completed';
+          step3Class = 'completed';
+      }
+      
+      let detailText = `📁 <strong>${o.nama_file}</strong><br>${o.ukuran_kertas.toUpperCase()} | ${o.jumlah_halaman} Halaman | ${o.jumlah_kopian} Kopian | Jilid: ${o.jenis_jilid}`;
+      
+      return `
+        <div class="progress-card">
+          <div class="card-header">
+            <div class="status-badge ${o.status === 'selesai' ? '' : 'proses'}">${statusText}</div>
+          </div>
+          <div class="order-title">${o.jenis_cetak}</div>
+          <div class="order-details">${detailText}<br><small style="color:#cbd5e1;"><i class="fas fa-barcode"></i> Antrean: ${o.queue_num}</small></div>
+          <div class="order-total">Rp ${parseInt(o.total_tagihan).toLocaleString()}</div>
+          <div class="progress-steps">
+            <div class="step ${step1Class}"><i class="fas fa-check-circle"></i><span>Diterima</span></div>
+            <div class="step ${step2Class}"><i class="fas fa-spinner"></i><span>Diproses</span></div>
+            <div class="step ${step3Class}"><i class="fas fa-flag-checkered"></i><span>Selesai</span></div>
+          </div>
+          <div class="progress-bar-bg"><div class="progress-fill" style="width: ${progressWidth}%;"></div></div>
+        </div>`;
+    }).join('')}</div>`;
+  }
+  
+  function renderHistoryPage() {
+    const histDiv = document.getElementById('historyListContainer'); if(!histDiv) return;
+    if(userOrders.length===0) histDiv.innerHTML='<div class="history-item">Belum ada riwayat pesanan.</div>';
+    else histDiv.innerHTML = userOrders.map(o => {
+      let displayStatus = o.status === 'siap_diambil' ? 'Telah Diambil' : (o.status === 'selesai' ? 'Siap Diambil' : o.status.toUpperCase());
+      return `<div class="history-item"><div><strong>${o.jenis_cetak}</strong><br><small>📁 ${o.nama_file}<br>Jilid: ${o.jenis_jilid}</small></div><div style="text-align:right;"><span style="font-weight:bold; color:#1b4b62;">Rp ${parseInt(o.total_tagihan).toLocaleString()}</span><br><span style="font-size:0.7rem; color:#94a3b8;">${o.created_at}</span><br><span class="status-badge" style="margin-top:5px;">${displayStatus}</span></div></div>`;
+    }).join('');
+  }
+  
+  setInterval(() => {
+    if(document.getElementById('userDashboard').style.display !== 'none'){
+        fetchUserOrders();
+    }
+  }, 3000);
+
+  // ========== SHOPPING CART MANAGER ==========
+  function addToCart(service, params) {
+    if (!params.file_name) { showToast("Harap tunggu hingga proses unggah dokumen selesai.", 'warning'); return; }
+    const total = calculateTotal(service, params);
+    const details = getDetailString(service, params);
+    cartItems.push({ id: Date.now(), service, params, total, details, date: new Date().toLocaleString() });
+    saveCart(); showToast(`${service} ditambahkan ke keranjang belanja.`, 'success');
+  }
+  
+  function renderCartPage() {
+    const cartDiv = document.getElementById('cartListContainer'); if (!cartDiv) return;
+    if (cartItems.length === 0) cartDiv.innerHTML = '<div class="cart-item">Keranjang belanja kosong.</div>';
+    else {
+      cartDiv.innerHTML = cartItems.map((item, idx) => `
+        <div class="cart-item cart-item-clickable" data-cart-index="${idx}">
+          <div style="flex:1"><strong>${item.service}</strong><br><small style="line-height:1.4; display:block; margin-top:5px;">${item.details}</small><br><span style="color:#e67e22; font-weight:bold;">Rp ${item.total.toLocaleString()}</span></div>
+          <div class="cart-actions"><button class="remove-cart" data-idx="${idx}"><i class="fas fa-trash-alt"></i></button></div>
+        </div>
+      `).join('');
+      document.querySelectorAll('.remove-cart').forEach(btn => btn.addEventListener('click', (e) => {
+        e.stopPropagation(); cartItems.splice(parseInt(btn.dataset.idx), 1); saveCart(); renderCartPage();
+      }));
+    }
+    const checkoutBtn = document.getElementById('checkoutBtn'); if (checkoutBtn) checkoutBtn.onclick = () => processCheckout();
+  }
+  
+  function getCurrentUserName() { return localStorage.getItem('fotokopiku_current_user') || 'Pengguna'; }
+
+  // ========== SERVICE EVENT CONTROLLERS ==========
+  function setupCetakWithCart() {
+    const getParams = () => ({ 
+      file_name: document.getElementById('uploadText_cetak').getAttribute('data-filename') || '',
+      file_display_name: document.getElementById('uploadText_cetak').getAttribute('data-displayname') || '',
+      mode: document.getElementById('cetakMode').value, kertas: document.getElementById('cetakKertas').value, 
+      copy: +document.getElementById('cetakCopy').value, halaman: +document.getElementById('cetakHalaman').value, 
+      spiral: document.getElementById('cetakSpiral').checked, laminating: document.getElementById('cetakLam').checked 
+    });
+    const updateEst = () => { document.getElementById('cetakEstimasi').innerHTML = `💰 Estimasi Biaya: Rp ${calculateTotal('Cetak & Fotokopi', getParams()).toLocaleString()}`; };
+    document.getElementById('submitCetak').onclick = () => addOrderDirect('Cetak & Fotokopi', getParams());
+    document.getElementById('addToCartCetak').onclick = () => addToCart('Cetak & Fotokopi', getParams());
+    document.getElementById('fileUpload_cetak')?.addEventListener('change', function() { uploadFileHelper(this, document.getElementById('uploadText_cetak')).then(() => updateEst()); });
+    ['cetakMode','cetakKertas','cetakCopy','cetakHalaman','cetakSpiral','cetakLam'].forEach(id => document.getElementById(id)?.addEventListener('input', updateEst));
+    updateEst();
+  }
+  
+  function setupSkripsiWithCart() {
+    const getParams = () => ({ 
+      file_name: document.getElementById('uploadText_skripsi').getAttribute('data-filename') || '',
+      file_display_name: document.getElementById('uploadText_skripsi').getAttribute('data-displayname') || '',
+      cover: document.getElementById('skripsiCover').value, eksemplar: +document.getElementById('skripsiEks').value 
+    });
+    const updateEst = () => { document.getElementById('skripsiEstimasi').innerHTML = `💰 Estimasi Biaya: Rp ${calculateTotal('Jilid Skripsi', getParams()).toLocaleString()}`; };
+    document.getElementById('submitSkripsi').onclick = () => addOrderDirect('Jilid Skripsi', getParams());
+    document.getElementById('addToCartSkripsi').onclick = () => addToCart('Jilid Skripsi', getParams());
+    document.getElementById('fileUpload_skripsi')?.addEventListener('change', function() { uploadFileHelper(this, document.getElementById('uploadText_skripsi')).then(() => updateEst()); });
+    ['skripsiCover','skripsiEks'].forEach(id => document.getElementById(id)?.addEventListener('input', updateEst));
+    updateEst();
+  }
+  function setupScanWithCart() {
+    const getParams = () => ({ file_name: document.getElementById('uploadText_scan').getAttribute('data-filename') || '', file_display_name: document.getElementById('uploadText_scan').getAttribute('data-displayname') || '', halaman: 1 });
+    const updateEst = () => { document.getElementById('scanEstimasi').innerHTML = `💰 Estimasi Biaya: Rp ${calculateTotal('Scan & Burning CD', getParams()).toLocaleString()}`; };
+    document.getElementById('submitScan').onclick = () => addOrderDirect('Scan & Burning CD', getParams());
+    document.getElementById('addToCartScan').onclick = () => addToCart('Scan & Burning CD', getParams());
+    document.getElementById('fileUpload_scan')?.addEventListener('change', function() { uploadFileHelper(this, document.getElementById('uploadText_scan')).then(() => updateEst()); });
+    updateEst();
+  }
+  function setupSoftWithCart() {
+    const getParams = () => ({ file_name: document.getElementById('uploadText_softcover').getAttribute('data-filename') || '', file_display_name: document.getElementById('uploadText_softcover').getAttribute('data-displayname') || '', halaman: +document.getElementById('softHalaman').value, eksemplar: +document.getElementById('softEks').value });
+    const updateEst = () => { document.getElementById('softEstimasi').innerHTML = `💰 Estimasi Biaya: Rp ${calculateTotal('Jilid Soft Cover', getParams()).toLocaleString()}`; };
+    document.getElementById('submitSoft').onclick = () => addOrderDirect('Jilid Soft Cover', getParams());
+    document.getElementById('addToCartSoft').onclick = () => addToCart('Jilid Soft Cover', getParams());
+    document.getElementById('fileUpload_softcover')?.addEventListener('change', function() { uploadFileHelper(this, document.getElementById('uploadText_softcover')).then(() => updateEst()); });
+    ['softHalaman','softEks'].forEach(id => document.getElementById(id)?.addEventListener('input', updateEst));
+    updateEst();
+  }
+  
+  function showServicePage(service) {
+    const home = document.getElementById('homePage'), history = document.getElementById('historyPage'), cartPage = document.getElementById('cartPage'), serviceDiv = document.getElementById('servicePage');
+    home.style.display = 'none'; history.style.display = 'none'; if(cartPage) cartPage.style.display = 'none'; serviceDiv.style.display = 'block';
+    let html = `<div><button class="back-home" id="backHomeBtn"><i class="fas fa-arrow-left"></i> Kembali ke Beranda</button></div>`;
+    const getUploadForm = (id) => `<div class="form-group"><label style="color:#0f2b3d;"><i class="fas fa-file-upload"></i> Unggah Dokumen</label><div class="upload-area" onclick="document.getElementById('fileUpload_${id}').click()"><i class="fas fa-cloud-upload-alt" style="font-size: 2.5rem; color: #2c7da0; margin-bottom: 12px;"></i><p id="uploadText_${id}" style="font-weight:600; color:#475569;">Klik di sini untuk memilih file</p><input type="file" id="fileUpload_${id}" style="display: none;" accept=".pdf,.doc,.docx,.jpg,.png"></div></div>`;
+    
+    if (service === 'cetak') {
+      html += `<div class="service-hero"><i class="fas fa-print" style="font-size: 48px; color:#2c7da0; margin-bottom:15px;"></i><h1 style="color:#0f2b3d;">Layanan Cetak & Fotokopi</h1></div><div class="service-layout"><div class="info-panel"><h3><i class="fas fa-tags" style="color:#e67e22;"></i> Daftar Harga</h3><ul class="price-list"><li><span>Hitam Putih</span><span class="price-tag">Mulai Rp250</span></li><li><span>Warna</span><span class="price-tag">Mulai Rp500</span></li><li><span>Jilid Lakban</span><span class="price-tag">Mulai Rp3.000</span></li></ul></div><div class="form-panel"><h3>Formulir Pemesanan</h3>${getUploadForm('cetak')}<div class="form-group"><label>Mode Pencetakan</label><select id="cetakMode"><option value="bw">⚫ Hitam Putih (Rp250)</option><option value="warna_low">🎨 Warna Teks (Rp500)</option><option value="warna_mid">🎨 Warna Standar (Rp1.000)</option><option value="warna_hi">🎨 Warna Kualitas Tinggi (Rp2.000)</option></select></div><div class="form-group"><label>Ukuran Kertas</label><select id="cetakKertas"><option value="a4">📄 A4</option><option value="f4">📄 F4</option></select></div><div style="display:flex; gap:16px;"><div class="form-group" style="flex:1;"><label>Jumlah Salinan</label><input type="number" id="cetakCopy" value="1" min="1"></div><div class="form-group" style="flex:1;"><label>Jumlah Halaman</label><input type="number" id="cetakHalaman" value="10" min="1"></div></div><div class="form-group" style="background:#f9fbfd; padding:15px; border-radius:15px;"><label><input type="checkbox" id="cetakSpiral" style="width:auto; margin-right:8px;"> Tambahkan Jilid Lakban</label><label style="margin-top:10px; display:block;"><input type="checkbox" id="cetakLam" style="width:auto; margin-right:8px;"> Tambahkan Laminating</label></div><div class="price-box" id="cetakEstimasi"></div><button class="btn-primary" id="submitCetak">Pesan Sekarang</button><button class="btn-secondary btn-cart" id="addToCartCetak">Tambah ke Keranjang</button></div></div>`;
+    } else if (service === 'skripsi') {
+      html += `<div class="service-hero"><i class="fas fa-graduation-cap" style="font-size: 48px; color:#2c7da0;"></i><h1>Layanan Jilid Skripsi Ekspres</h1></div><div class="service-layout"><div class="info-panel"><h3>Tarif Layanan</h3><ul class="price-list"><li><span>Soft Cover</span><span class="price-tag">Rp40.000</span></li><li><span>Hard Cover</span><span class="price-tag">Rp45.000</span></li></ul></div><div class="form-panel"><h3>Formulir Pemesanan</h3>${getUploadForm('skripsi')}<div class="form-group"><label>Jenis Sampul</label><select id="skripsiCover"><option>Soft Cover</option><option>Hard Cover</option></select></div><div class="form-group"><label>Jumlah Eksemplar</label><input type="number" id="skripsiEks" value="2" min="1"></div><div class="price-box" id="skripsiEstimasi"></div><button class="btn-primary" id="submitSkripsi">Pesan Sekarang</button><button class="btn-secondary btn-cart" id="addToCartSkripsi">Tambah ke Keranjang</button></div></div>`;
+    } else if (service === 'scan') {
+      html += `<div class="service-hero"><i class="fas fa-compact-disc" style="font-size: 48px; color:#2c7da0;"></i><h1>Layanan Scan & CD</h1></div><div class="service-layout"><div class="info-panel"><h3>Tarif Layanan</h3><p>Paket Lengkap Rp20.000</p></div><div class="form-panel">${getUploadForm('scan')}<div class="price-box" id="scanEstimasi"></div><button class="btn-primary" id="submitScan">Pesan Sekarang</button><button class="btn-secondary btn-cart" id="addToCartScan">Tambah ke Keranjang</button></div></div>`;
+    } else if (service === 'softcover') {
+      html += `<div class="service-hero"><i class="fas fa-layer-group" style="font-size: 48px; color:#2c7da0;"></i><h1>Layanan Jilid Soft Cover</h1></div><div class="service-layout"><div class="info-panel"><h3>Ketentuan Harga</h3><p>Harga menyesuaikan jumlah halaman dokumen.</p></div><div class="form-panel">${getUploadForm('softcover')}<div class="form-group"><label>Jumlah Halaman</label><input type="number" id="softHalaman" value="45"></div><div class="form-group"><label>Jumlah Eksemplar</label><input type="number" id="softEks" value="1"></div><div class="price-box" id="softEstimasi"></div><button class="btn-primary" id="submitSoft">Pesan Sekarang</button><button class="btn-secondary btn-cart" id="addToCartSoft">Tambah ke Keranjang</button></div></div>`;
+    }
+    serviceDiv.innerHTML = html;
+    document.getElementById('backHomeBtn').onclick = () => { serviceDiv.style.display = 'none'; home.style.display = 'block'; };
+    if (service === 'cetak') setupCetakWithCart();
+    else if (service === 'skripsi') setupSkripsiWithCart();
+    else if (service === 'scan') setupScanWithCart();
+    else if (service === 'softcover') setupSoftWithCart();
+  }
+  
+  function renderUserDashboard(userName) {
+    localStorage.setItem('fotokopiku_current_user', userName);
+    const container = document.getElementById('userDashboard');
+    container.innerHTML = `
+    <div class="dash-header"><div><h2><i class="fas fa-store"></i> FotokopiKu</h2><small>Selamat datang, ${userName}</small></div><div class="nav-links"><button class="nav-btn active" data-page="home">Beranda</button><button class="nav-btn" data-page="history">Riwayat</button><button class="nav-btn" data-page="cart">Keranjang</button><div class="cart-icon" id="cartIconNav"><i class="fas fa-shopping-bag"></i><span class="cart-count">${cartItems.length}</span></div><button class="btn-logout" id="userLogoutBtn">Keluar</button></div></div>
+    <div class="dashboard-main">
+        <div id="homePage">
+            <div class="hero-banner"><div><h2>Platform Layanan Cetak Digital</h2><p>Solusi praktis untuk kebutuhan cetak, jilid, dan pemindaian dokumen Anda.</p></div></div>
+            <div id="activeProgressContainer"><h3>📌 Pesanan Aktif</h3><div id="activeProgressList"></div></div>
+            <h3 style="margin:30px 0 15px;">Daftar Layanan Tersedia</h3>
+            <div class="services-grid"><div class="service-card" data-service="cetak"><i class="fas fa-print"></i><h3>Cetak & Fotokopi</h3><div class="badge">Layanan Reguler</div></div><div class="service-card" data-service="skripsi"><i class="fas fa-graduation-cap"></i><h3>Jilid Skripsi</h3><div class="badge">Layanan Ekspres</div></div><div class="service-card" data-service="scan"><i class="fas fa-compact-disc"></i><h3>Scan Dokumen & CD</h3><div class="badge">Layanan Digital</div></div><div class="service-card" data-service="softcover"><i class="fas fa-layer-group"></i><h3>Jilid Soft Cover</h3><div class="badge">Layanan Penjilidan</div></div></div>
+        </div>
+        <div id="historyPage" style="display:none;"><h3>Riwayat Transaksi</h3><div id="historyListContainer"></div></div>
+        <div id="cartPage" style="display:none;"><h3>🛒 Keranjang Belanja</h3><div id="cartListContainer"></div><button id="checkoutBtn" class="btn-primary">Proses Checkout</button></div>
+        <div id="servicePage" style="display:none;"></div>
+    </div>
+    <div class="footer-copyright">© 2026 FotokopiKu. Hak Cipta Dilindungi.</div>`;
+    
+    document.querySelectorAll('.nav-btn').forEach(btn => btn.addEventListener('click', () => {
+      const p = btn.dataset.page;
+      document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active')); btn.classList.add('active');
+      document.getElementById('homePage').style.display = p==='home'?'block':'none';
+      document.getElementById('historyPage').style.display = p==='history'?'block':'none';
+      document.getElementById('cartPage').style.display = p==='cart'?'block':'none';
+      document.getElementById('servicePage').style.display = 'none';
+      if(p==='history') renderHistoryPage();
+      if(p==='cart') renderCartPage();
+    }));
+    document.querySelectorAll('.service-card').forEach(card => card.addEventListener('click', () => showServicePage(card.dataset.service)));
+    document.getElementById('userLogoutBtn').onclick = () => location.reload();
+    
+    fetchUserOrders();
+  }
+  
+  // ========== USER AUTHENTICATION ENGINE ==========
+  setTimeout(() => {
+    const loginDivA = document.getElementById('loginFormContainer'), registerDivA = document.getElementById('registerFormContainer');
+    const tabs = document.querySelectorAll('.auth-tab'), switchA = document.getElementById('switchAuth');
+    if(tabs.length) tabs.forEach(t=>t.addEventListener('click',()=>{
+      tabs.forEach(tt=>tt.classList.remove('active')); t.classList.add('active');
+      if(t.dataset.form==='login'){ loginDivA.style.display='block'; registerDivA.style.display='none'; switchA.innerText='Belum memiliki akun? Daftar di sini';}
+      else{ loginDivA.style.display='none'; registerDivA.style.display='block'; switchA.innerText='Sudah memiliki akun? Masuk di sini';}
+    }));
+    if(switchA) switchA.addEventListener('click',()=>{ if(loginDivA.style.display !== 'none') tabs[1].click(); else tabs[0].click(); });
+    
+    document.getElementById('registerForm')?.addEventListener('submit', (e) => { 
+      e.preventDefault(); 
+      const name=document.getElementById('regName').value, email=document.getElementById('regEmail').value, pass=document.getElementById('regPassword').value, conf=document.getElementById('regConfirm').value, err=document.getElementById('registerErrorMsg'); 
+      if(!name||!email||!pass) { err.innerText='Harap isi seluruh bidang formulir.'; return; } 
+      if(pass!==conf){err.innerText='Konfirmasi kata sandi tidak sesuai.'; return;} 
+      if(pass.length<6){err.innerText='Kata sandi minimal 6 karakter.'; return;} 
+      if(users.find(u=>u.email===email)){err.innerText='Alamat email telah terdaftar.'; return;} 
+      users.push({name, email, password:pass, role:'user'}); 
+      localStorage.setItem('fotokopiku_users',JSON.stringify(users)); 
+      showToast('Pendaftaran berhasil. Silakan masuk ke akun Anda.', 'success'); tabs[0].click(); 
+    });
+    
+    document.getElementById('loginForm')?.addEventListener('submit', (e) => { 
+      e.preventDefault(); 
+      const email=document.getElementById('loginEmail').value, pass=document.getElementById('loginPassword').value, err=document.getElementById('loginErrorMsg'); 
+      const user=users.find(u=>u.email===email && u.password===pass); 
+      if(user && user.role==='user'){ 
+        document.getElementById('authPage').style.display='none'; document.getElementById('userDashboard').style.display='block'; 
+        renderUserDashboard(user.name); 
+      } else { err.innerText='Kredensial email atau kata sandi tidak valid.'; } 
+    });
+  }, 50);
+</script>
+</body>
+</html>
