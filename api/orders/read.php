@@ -8,8 +8,8 @@ header("Access-Control-Allow-Methods: GET");
 include_once '../config/db.php';
 
 try {
-    // Ambil semua data pesanan, urutkan dari yang paling baru masuk
-    $query = "SELECT id, queue_num, nama_file, jenis_cetak, ukuran_kertas, jumlah_halaman, jumlah_kopian, jenis_jilid, total_tagihan, status, created_at FROM orders ORDER BY id DESC";
+    // 🔥 KINI MEMANGGIL KOLOM no_hp JUGA
+    $query = "SELECT id, queue_num, nama_pelanggan, no_hp, nama_file, jenis_cetak, ukuran_kertas, jumlah_halaman, jumlah_kopian, jenis_jilid, total_tagihan, status, created_at FROM orders ORDER BY id DESC";
     $stmt = $conn->prepare($query);
     $stmt->execute();
 
@@ -21,6 +21,8 @@ try {
             $order_item = array(
                 "id" => $id,
                 "queue_num" => $queue_num,
+                "nama_pelanggan" => $nama_pelanggan,
+                "no_hp" => $no_hp, // 🔥 DATA SEKARANG IKUT DIKIRIM KE FRONTEND ADMIN
                 "nama_file" => $nama_file,
                 "jenis_cetak" => $jenis_cetak,
                 "ukuran_kertas" => $ukuran_kertas,

@@ -5,7 +5,7 @@ header("Content-Type: application/json; charset=UTF-8");
 header("Access-Control-Allow-Methods: POST, OPTIONS");
 header("Access-Control-Allow-Headers: Content-Type, Access-Control-Allow-Headers, Authorization, X-Requested-With");
 
-// 🔥 SIHIR BARU: Sambut OPTIONS Request dari browser biar tidak dikira XAMPP mati!
+// Sihir OPTIONS Request dari browser
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     http_response_code(200);
     exit();
@@ -14,7 +14,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
 include_once '../config/db.php';
 
 $headers = apache_request_headers();
-// Siasat agar case-insensitive pada header
 $authHeader = isset($headers['Authorization']) ? $headers['Authorization'] : (isset($headers['authorization']) ? $headers['authorization'] : null);
 
 if (!$authHeader) {
@@ -34,6 +33,10 @@ if (!empty($data->jenis_layanan) && !empty($data->total_tagihan)) {
         $jenis_jilid    = isset($data->jenis_jilid) ? $data->jenis_jilid : 'Tidak Ada';
         $total_tagihan  = (float)$data->total_tagihan;
         $nama_file      = isset($data->nama_file) ? $data->nama_file : 'Dokumen_Tanpa_Nama.pdf';
+        
+        // 🔥 TANGKAP DATA NOMOR HP DARI FRONTEND
+        $nama_pelanggan = isset($data->nama_pelanggan) ? $data->nama_pelanggan : 'Hamba Allah';
+        $no_hp          = isset($data->no_hp) ? $data->no_hp : '-';
 
         $tanggal_hari_ini = date("Ymd");
         $query_q = "SELECT queue_num FROM orders WHERE queue_num LIKE :hari_ini ORDER BY id DESC LIMIT 1";
@@ -51,10 +54,11 @@ if (!empty($data->jenis_layanan) && !empty($data->total_tagihan)) {
         }
         $queue_num = "Q-" . $tanggal_hari_ini . "-" . str_pad($urutan, 3, "0", STR_PAD_LEFT);
 
+        // 🔥 MEMASUKKAN no_hp KE DALAM QUERY INSERT DATABASE
         $query = "INSERT INTO orders 
-                  (user_id, queue_num, nama_file, jenis_cetak, ukuran_kertas, jumlah_halaman, jumlah_kopian, jenis_jilid, total_tagihan, status) 
+                  (user_id, queue_num, nama_file, jenis_cetak, ukuran_kertas, jumlah_halaman, jumlah_kopian, jenis_jilid, total_tagihan, status, nama_pelanggan, no_hp) 
                   VALUES 
-                  (1, :queue_num, :nama_file, :jenis_cetak, :ukuran_kertas, :jumlah_halaman, :jumlah_kopian, :jenis_jilid, :total_tagihan, 'Menunggu')";
+                  (1, :queue_num, :nama_file, :jenis_cetak, :ukuran_kertas, :jumlah_halaman, :jumlah_kopian, :jenis_jilid, :total_tagihan, 'Menunggu', :nama_pelanggan, :no_hp)";
         
         $stmt = $conn->prepare($query);
         $stmt->bindParam(':queue_num', $queue_num);
@@ -65,6 +69,8 @@ if (!empty($data->jenis_layanan) && !empty($data->total_tagihan)) {
         $stmt->bindParam(':jumlah_kopian', $jumlah_kopian);
         $stmt->bindParam(':jenis_jilid', $jenis_jilid);
         $stmt->bindParam(':total_tagihan', $total_tagihan);
+        $stmt->bindParam(':nama_pelanggan', $nama_pelanggan); 
+        $stmt->bindParam(':no_hp', $no_hp); // 🔥 BINDING VARIABEL NOMOR HP Baru
 
         if ($stmt->execute()) {
             http_response_code(201);
